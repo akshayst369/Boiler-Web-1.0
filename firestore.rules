@@ -1,0 +1,32 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function profile() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+    function allowed(boiler) {
+      return signedIn() && (
+        profile().role == 'admin' ||
+        (profile().role == 'owner' && profile().company != '' && profile().company == boiler.company) ||
+        (profile().role == 'inspector' && profile().district != '' && profile().district == boiler.district)
+      );
+    }
+    function allowedReading() {
+      return allowed(get(/databases/$(database)/documents/boilers/$(resource.data.boiler_id)).data);
+    }
+    match /users/{uid} {
+      allow get: if signedIn() && request.auth.uid == uid;
+    }
+    match /boilers/{id} {
+      allow read: if allowed(resource.data);
+    }
+    match /telemetry/{id} {
+      allow read: if allowedReading();
+    }
+    match /override_logs/{id} {
+      allow read: if allowedReading();
+    }
+    // Client writes are denied. Provisioning and the bridge use Admin SDK.
+  }
+}

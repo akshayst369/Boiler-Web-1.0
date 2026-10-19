@@ -1,0 +1,13 @@
+{
+  "name": "smart-boiler",
+  "version": "1.0.0",
+  "private": true,
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "dev": "npm --prefix boiler-dashboard run dev",
+    "bridge": "npm --prefix boiler-mqtt-bridge start",
+    "build": "npm --prefix boiler-dashboard run build",
+    "lint": "npm --prefix boiler-dashboard run lint",
+    "test": "npm --prefix boiler-dashboard test && npm --prefix boiler-mqtt-bridge test"
+  }
+}
